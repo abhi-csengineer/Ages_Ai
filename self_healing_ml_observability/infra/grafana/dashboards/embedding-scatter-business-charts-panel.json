@@ -1,0 +1,37 @@
+{
+  "id": null,
+  "title": "Embedding Drift Scatter (Business Charts)",
+  "type": "volkovlabs-echarts-panel",
+  "datasource": {
+    "type": "prometheus",
+    "uid": "-- Grafana --"
+  },
+  "gridPos": {
+    "h": 12,
+    "w": 24,
+    "x": 0,
+    "y": 24
+  },
+  "targets": [
+    {
+      "refId": "A",
+      "expr": "embedding_x",
+      "legendFormat": "{{source}}/{{request_id}}"
+    },
+    {
+      "refId": "B",
+      "expr": "embedding_y",
+      "legendFormat": "{{source}}/{{request_id}}"
+    },
+    {
+      "refId": "C",
+      "expr": "max(ml_drift_score{method=\"mmd\"})",
+      "legendFormat": "mmd"
+    }
+  ],
+  "options": {
+    "renderer": "canvas",
+    "code": "const series = (context.panel.data && context.panel.data.series) || [];\nconst xSeries = series.find((s) => s.refId === 'A');\nconst ySeries = series.find((s) => s.refId === 'B');\nconst mmdSeries = series.find((s) => s.refId === 'C');\n\nconst toRows = (s) => {\n  if (!s || !s.fields || s.fields.length === 0) return [];\n  const valueField = s.fields.find((f) => f.type === 'number') || s.fields[s.fields.length - 1];\n  const labels = (valueField && valueField.labels) || {};\n  const values = (valueField && valueField.values) ? valueField.values.toArray() : [];\n  if (values.length === 0) return [];\n  const last = values[values.length - 1];\n  return [{ source: labels.source || 'live', request_id: labels.request_id || 'unknown', value: Number(last) }];\n};\n\nconst xRows = (xSeries ? xSeries.fields : []).flatMap((f) => {\n  if (f.type !== 'number') return [];\n  const labels = f.labels || {};\n  const vals = f.values ? f.values.toArray() : [];\n  if (vals.length === 0) return [];\n  return [{ source: labels.source || 'live', request_id: labels.request_id || 'unknown', x: Number(vals[vals.length - 1]) }];\n});\n\nconst yRows = (ySeries ? ySeries.fields : []).flatMap((f) => {\n  if (f.type !== 'number') return [];\n  const labels = f.labels || {};\n  const vals = f.values ? f.values.toArray() : [];\n  if (vals.length === 0) return [];\n  return [{ source: labels.source || 'live', request_id: labels.request_id || 'unknown', y: Number(vals[vals.length - 1]) }];\n});\n\nconst yMap = new Map(yRows.map((r) => [`${r.source}/${r.request_id}`, r.y]));\nconst points = xRows\n  .map((r) => ({\n    source: r.source,\n    request_id: r.request_id,\n    x: r.x,\n    y: yMap.get(`${r.source}/${r.request_id}`),\n  }))\n  .filter((r) => Number.isFinite(r.x) && Number.isFinite(r.y));\n\nconst refPoints = points.filter((p) => p.source === 'reference').map((p) => [p.x, p.y]);\nconst livePoints = points.filter((p) => p.source === 'live').map((p) => [p.x, p.y]);\n\nlet mmd = 0;\nif (mmdSeries && mmdSeries.fields) {\n  const mmdField = mmdSeries.fields.find((f) => f.type === 'number');\n  const vals = mmdField && mmdField.values ? mmdField.values.toArray() : [];\n  if (vals.length > 0) mmd = Number(vals[vals.length - 1]);\n}\n\nconst liveColor = mmd > 0.25 ? '#e03131' : '#1c7ed6';\n\nreturn {\n  backgroundColor: 'transparent',\n  animationDuration: 300,\n  title: {\n    text: `Reference vs Live Embeddings (MMD=${mmd.toFixed(3)})`,\n    left: 'center',\n    textStyle: { fontSize: 13 }\n  },\n  tooltip: { trigger: 'item' },\n  xAxis: { type: 'value', name: 'embedding_x' },\n  yAxis: { type: 'value', name: 'embedding_y' },\n  series: [\n    {\n      name: 'Reference',\n      type: 'scatter',\n      data: refPoints,\n      symbolSize: 8,\n      itemStyle: { color: '#868e96', opacity: 0.45 },\n      emphasis: { disabled: true },\n      animation: false\n    },\n    {\n      name: 'Live',\n      type: 'scatter',\n      data: livePoints,\n      symbolSize: 10,\n      itemStyle: { color: liveColor, opacity: 0.9 },\n      animationDurationUpdate: 350,\n      universalTransition: true\n    }\n  ]\n};"
+  },
+  "pluginVersion": "6.0.0"
+}

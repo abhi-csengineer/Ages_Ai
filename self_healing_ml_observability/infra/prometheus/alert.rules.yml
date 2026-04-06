@@ -1,0 +1,24 @@
+groups:
+  - name: ml-observability-alerts
+    rules:
+      - alert: DriftAlert
+        expr: max(ml_drift_score{method="psi"}) > 0.25 or max(ml_drift_score{method="mmd"}) > 0.25
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Drift score threshold exceeded"
+      - alert: BiasAlert
+        expr: max(ml_bias_score) > 0.35
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bias score threshold exceeded"
+      - alert: SecurityAlert
+        expr: max(ml_circuit_status{status="SECURITY_ATTACK"}) > 0.5
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prompt injection attack detected"

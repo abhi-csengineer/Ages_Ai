@@ -1,0 +1,93 @@
+name: ML Governance Quality Gate
+
+on:
+  pull_request:
+
+jobs:
+  regression-gate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: self_healing_ml_observability
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start API server
+        run: |
+          nohup python -m uvicorn main:app --app-dir src --host 127.0.0.1 --port 8000 > /tmp/uvicorn.log 2>&1 &
+          echo $! > /tmp/uvicorn.pid
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              echo "API is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become ready"
+          cat /tmp/uvicorn.log || true
+          exit 1
+
+      - name: Warm up observability metrics
+        run: |
+          python - <<'PY'
+          import json
+          import urllib.request
+
+          def post(payload):
+              req = urllib.request.Request(
+                  "http://127.0.0.1:8000/predict",
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={"Content-Type": "application/json"},
+                  method="POST",
+              )
+              with urllib.request.urlopen(req, timeout=5):
+                  pass
+
+          for i in range(160):
+              payload = {
+                  "request_id": f"ci-{i}",
+                  "input_features": {
+                      "feature_a": 0.02 * (i % 5),
+                      "feature_b": 0.01 * ((i * 3) % 7),
+                      "risk_score": 0.25 + 0.005 * (i % 10),
+                      "latency_ms": 10.0,
+                  },
+                  "embeddings": [0.01 * (j + (i % 3)) for j in range(8)],
+                  "demographic_group": "group_a" if i % 2 == 0 else "group_b",
+                  "population_id": i % 2,
+                  "observed_label": 0,
+                  "prompt": "standard traffic",
+              }
+              post(payload)
+          PY
+
+      - name: Run regression quality gate
+        run: |
+          python scripts/ci_quality_gate.py --metrics-url http://127.0.0.1:8000/metrics --min-accuracy 0.90 --max-bias 0.10
+
+      - name: Dump server log on failure
+        if: failure()
+        run: |
+          cat /tmp/uvicorn.log || true
+
+      - name: Stop API server
+        if: always()
+        run: |
+          if [ -f /tmp/uvicorn.pid ]; then
+            kill $(cat /tmp/uvicorn.pid) || true
+          fi

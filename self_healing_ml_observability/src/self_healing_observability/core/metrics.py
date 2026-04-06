@@ -42,6 +42,28 @@ CIRCUIT_STATUS_GAUGE = Gauge(
     labelnames=("status",),
 )
 
+CIRCUIT_CRITICAL_DRIFT_STREAK_GAUGE = Gauge(
+    "ml_circuit_critical_drift_streak",
+    "Consecutive windows above critical drift threshold.",
+)
+
+CIRCUIT_LATCH_TRIGGER_COUNTER = Counter(
+    "ml_circuit_latch_trigger_total",
+    "Total number of times the breaker latched into fallback mode.",
+)
+
+AUTO_HEAL_TRIGGER_COUNTER = Counter(
+    "ml_auto_heal_trigger_total",
+    "Autonomous healing trigger events.",
+    labelnames=("result",),
+)
+
+INCIDENT_ALERT_COUNTER = Counter(
+    "ml_incident_alert_total",
+    "Outgoing incident alert notifications.",
+    labelnames=("channel", "result"),
+)
+
 INFERENCE_LATENCY_HISTOGRAM = Histogram(
     "ml_inference_latency_seconds",
     "End-to-end inference latency in seconds.",
@@ -95,6 +117,26 @@ EMBEDDING_Y_GAUGE = Gauge(
 SATURATION_GAUGE = Gauge(
     "ml_inference_saturation",
     "Approximate saturation ratio based on active requests and capacity.",
+)
+
+ACTIVE_LEARNING_CANDIDATE_GAUGE = Gauge(
+    "ml_active_learning_candidate_rows",
+    "Candidate rows considered for retraining curation.",
+)
+
+ACTIVE_LEARNING_SELECTED_GAUGE = Gauge(
+    "ml_active_learning_selected_rows",
+    "Rows selected by diversity-based curation for retraining.",
+)
+
+ACTIVE_LEARNING_DATA_EFFICIENCY_GAUGE = Gauge(
+    "ml_active_learning_data_efficiency_ratio",
+    "Selected/candidate ratio for retraining curation.",
+)
+
+ACTIVE_LEARNING_DIVERSITY_GAUGE = Gauge(
+    "ml_active_learning_diversity_score",
+    "Average minimum pairwise embedding distance inside curated retraining batch.",
 )
 
 

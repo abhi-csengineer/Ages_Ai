@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 
@@ -7,6 +8,67 @@ def _safe_ratio(num: float, den: float) -> float:
     if den <= 0.0:
         return 0.0
     return num / den
+
+
+def _clip01(x: float) -> float:
+    return max(0.0, min(1.0, x))
+
+
+def _beta_posterior(mean_proxy: float, n_eff: int, prior_a: float = 1.0, prior_b: float = 1.0) -> dict[str, float]:
+    """
+    Beta posterior summary with normal-approximation 95% credible interval.
+
+    We use a proxy sample size because Hui-Walter is itself an estimator under
+    latent labels; this keeps uncertainty reporting conservative and stable.
+    """
+    n = max(int(n_eff), 1)
+    m = _clip01(mean_proxy)
+
+    alpha = prior_a + (m * n)
+    beta = prior_b + ((1.0 - m) * n)
+
+    post_mean = alpha / max(alpha + beta, 1e-9)
+    post_var = (alpha * beta) / max(((alpha + beta) ** 2) * (alpha + beta + 1.0), 1e-9)
+    post_sd = math.sqrt(max(post_var, 0.0))
+
+    z = 1.96
+    lower = _clip01(post_mean - (z * post_sd))
+    upper = _clip01(post_mean + (z * post_sd))
+    return {
+        "posterior_mean": post_mean,
+        "lower_95": lower,
+        "upper_95": upper,
+        "posterior_alpha": alpha,
+        "posterior_beta": beta,
+    }
+
+
+def _accuracy_posterior_summary(
+    prevalence: dict[str, float],
+    sensitivity: dict[str, float],
+    specificity: dict[str, float],
+) -> dict[str, float]:
+    """Approximate posterior for accuracy via first-order uncertainty propagation."""
+    p = prevalence["posterior_mean"]
+    se = sensitivity["posterior_mean"]
+    sp = specificity["posterior_mean"]
+
+    mean = (p * se) + ((1.0 - p) * sp)
+
+    var_p = ((prevalence["upper_95"] - prevalence["lower_95"]) / 3.92) ** 2
+    var_se = ((sensitivity["upper_95"] - sensitivity["lower_95"]) / 3.92) ** 2
+    var_sp = ((specificity["upper_95"] - specificity["lower_95"]) / 3.92) ** 2
+
+    var = (p * p * var_se) + (((1.0 - p) ** 2) * var_sp) + (((se - sp) ** 2) * var_p)
+    sd = math.sqrt(max(var, 0.0))
+
+    lower = _clip01(mean - (1.96 * sd))
+    upper = _clip01(mean + (1.96 * sd))
+    return {
+        "posterior_mean": _clip01(mean),
+        "lower_95": lower,
+        "upper_95": upper,
+    }
 
 
 def normalized_confidence(probs: list[float]) -> float:
@@ -92,6 +154,35 @@ class HuiWalterTracker:
         accuracy_a = prevalence_pop0 * se_a + (1.0 - prevalence_pop0) * sp_a
         fpr_a = 1.0 - sp_a
 
+        n_total = n_pop[0] + n_pop[1]
+        n_pos_pop0 = max(int(round(p_bar * max(n_pop[0], 1))), 1)
+        n_pos_pop1 = max(int(round(p_bar * max(n_pop[1], 1))), 1)
+        n_neg_pop0 = max(int(round(q_bar * max(n_pop[0], 1))), 1)
+        n_neg_pop1 = max(int(round(q_bar * max(n_pop[1], 1))), 1)
+
+        se_a_bayes = _beta_posterior(se_a, n_pos_pop0)
+        sp_a_bayes = _beta_posterior(sp_a, n_neg_pop0)
+        se_b_bayes = _beta_posterior(se_b, n_pos_pop1)
+        sp_b_bayes = _beta_posterior(sp_b, n_neg_pop1)
+
+        prev0_bayes = _beta_posterior(prevalence_pop0, max(n_pop[0], 1))
+        prev1_bayes = _beta_posterior(prevalence_pop1, max(n_pop[1], 1))
+
+        acc_a_bayes = _accuracy_posterior_summary(prev0_bayes, se_a_bayes, sp_a_bayes)
+        fpr_a_bayes = _beta_posterior(fpr_a, n_neg_pop0)
+
+        ci = {
+            "sensitivity_model_a": se_a_bayes,
+            "specificity_model_a": sp_a_bayes,
+            "sensitivity_model_b": se_b_bayes,
+            "specificity_model_b": sp_b_bayes,
+            "prevalence_population_0": prev0_bayes,
+            "prevalence_population_1": prev1_bayes,
+            "accuracy_model_a": acc_a_bayes,
+            "false_positive_rate_model_a": fpr_a_bayes,
+            "effective_sample_size": n_total,
+        }
+
         return {
             "status": "estimated",
             "contingency_table_2x2x2": self.table,
@@ -105,5 +196,18 @@ class HuiWalterTracker:
                 "prevalence_population_1": prevalence_pop1,
                 "accuracy_model_a": accuracy_a,
                 "false_positive_rate_model_a": fpr_a,
+            },
+            "bayesian": {
+                "estimated": {
+                    "sensitivity_model_a": se_a_bayes["posterior_mean"],
+                    "specificity_model_a": sp_a_bayes["posterior_mean"],
+                    "sensitivity_model_b": se_b_bayes["posterior_mean"],
+                    "specificity_model_b": sp_b_bayes["posterior_mean"],
+                    "prevalence_population_0": prev0_bayes["posterior_mean"],
+                    "prevalence_population_1": prev1_bayes["posterior_mean"],
+                    "accuracy_model_a": acc_a_bayes["posterior_mean"],
+                    "false_positive_rate_model_a": fpr_a_bayes["posterior_mean"],
+                },
+                "credible_interval_95": ci,
             },
         }

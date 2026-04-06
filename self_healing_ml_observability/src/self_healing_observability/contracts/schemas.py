@@ -88,9 +88,45 @@ class ActiveLearningQueueResponse(BaseModel):
     items: list[ActiveLearningQueueItem] = Field(default_factory=list)
 
 
+class ActiveLearningCandidateItem(BaseModel):
+    request_id: str
+    confidence: float
+    uncertainty: float
+
+
+class ActiveLearningCandidatesResponse(BaseModel):
+    items: list[ActiveLearningCandidateItem] = Field(default_factory=list)
+
+
+class TelemetrySnapshot(BaseModel):
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    circuit_state: str
+    circuit_status: str
+    hui_walter_estimated_accuracy: float
+    psi_drift_score: float
+    mmd_drift_score: float
+    bias_score: float
+    reference_count: int
+    detection_count: int
+    batch_event: bool = False
+    chaos_active: bool = False
+
+
 class EmbeddingSnapshotResponse(BaseModel):
     reference: list[list[float]] = Field(default_factory=list)
     detection: list[list[float]] = Field(default_factory=list)
+
+
+class EmbeddingPoint(BaseModel):
+    request_id: str
+    source: Literal["reference", "live"]
+    x: float
+    y: float
+    uncertainty: float = 0.0
+
+
+class EmbeddingPointsResponse(BaseModel):
+    points: list[EmbeddingPoint] = Field(default_factory=list)
 
 
 class FaithfulnessRequest(BaseModel):
@@ -101,3 +137,41 @@ class FaithfulnessRequest(BaseModel):
 class FaithfulnessResponse(BaseModel):
     score: float
     model_name: str
+
+
+class GeminiInferenceRequest(BaseModel):
+    request_id: str = Field(..., min_length=1)
+    prompt: str = Field(..., min_length=1)
+    population_id: int = Field(0, ge=0, le=1)
+    demographic_group: str = Field(default="unknown", min_length=1)
+
+
+class GeminiInferenceResponse(BaseModel):
+    request_id: str
+    prompt: str
+    response_text: str
+    provider_model: str
+    mmd_drift_score: float
+    hui_walter_estimated_accuracy: float
+    status: Literal["OK", "DRIFT", "ATTACK"]
+    umap_x: float = Field(ge=0.0, le=1.0)
+    umap_y: float = Field(ge=0.0, le=1.0)
+
+
+class HealerCollectRequest(BaseModel):
+    request_ids: list[str] = Field(default_factory=list)
+
+
+class HealerCollectResponse(BaseModel):
+    accepted: bool
+    stored_rows: int
+
+
+class LiveTelemetryPayload(BaseModel):
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    request_id: str
+    status: Literal["OK", "DRIFT", "ATTACK"]
+    accuracy: float
+    drift_magnitude: float
+    umap_x: float = Field(ge=0.0, le=1.0)
+    umap_y: float = Field(ge=0.0, le=1.0)

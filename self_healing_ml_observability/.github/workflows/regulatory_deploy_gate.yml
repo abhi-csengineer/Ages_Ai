@@ -1,0 +1,51 @@
+name: Regulatory Deployment Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      metadata_url:
+        description: "Latest model metadata URL"
+        required: true
+        type: string
+  deployment:
+
+env:
+  MIN_ACCURACY: "0.90"
+  MAX_BIAS: "0.10"
+
+jobs:
+  enforce-regulatory-policy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: self_healing_ml_observability
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve metadata URL
+        id: resolve
+        run: |
+          INPUT_URL="${{ github.event.inputs.metadata_url }}"
+          SECRET_URL="${{ secrets.MODEL_METADATA_URL }}"
+          if [ -n "$INPUT_URL" ]; then
+            echo "metadata_url=$INPUT_URL" >> "$GITHUB_OUTPUT"
+          elif [ -n "$SECRET_URL" ]; then
+            echo "metadata_url=$SECRET_URL" >> "$GITHUB_OUTPUT"
+          else
+            echo "Missing metadata URL. Provide workflow input or MODEL_METADATA_URL secret."
+            exit 1
+          fi
+
+      - name: Run regulatory deployment gate
+        run: |
+          python scripts/regulatory_deploy_gate.py \
+            --metadata-url "${{ steps.resolve.outputs.metadata_url }}" \
+            --min-accuracy "$MIN_ACCURACY" \
+            --max-bias "$MAX_BIAS"

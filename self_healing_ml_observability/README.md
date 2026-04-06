@@ -4,7 +4,7 @@ Production-grade modular framework for real-time ML observability, drift/bias mi
 
 ## Implemented Components
 
-1. High-performance ingestion layer with Bytewax dataflow and DuckDB in-memory feature store.
+1. High-performance ingestion layer with Bytewax dataflow, including distributed Kafka/Redpanda ingestion.
 2. Advanced detection layer with PSI for tabular drift and MMD for embedding drift.
 3. Streaming explainability module with FastSHAP-style approximation to identify top drift feature.
 4. Real-time fairness monitoring (Disparate Impact + Equalized Odds) with bias alerting.
@@ -106,8 +106,35 @@ docker compose up --build
 Services:
 
 - API: http://127.0.0.1:8000
+- Telemetry WebSocket: ws://127.0.0.1:8000/ws/telemetry
 - Prometheus: http://127.0.0.1:9090
 - Grafana: http://127.0.0.1:3000 (admin/admin)
+- Redpanda (Kafka API): localhost:9092
+- Qdrant Vector DB: http://127.0.0.1:6333
+- Redis Circuit Cache: localhost:6379
+
+The API supports backend selection with environment variables:
+
+- `AEGIS_FEATURE_STORE_BACKEND=duckdb|qdrant`
+- `AEGIS_QDRANT_URL=http://qdrant:6333`
+- `AEGIS_REDIS_URL=redis://redis:6379/0`
+
+## Distributed Bytewax Ingestion (Kafka/Redpanda)
+
+Install Bytewax worker dependencies:
+
+```bash
+pip install -r requirements-bytewax.txt
+```
+
+Run distributed workers against Kafka/Redpanda topic(s):
+
+```bash
+export AEGIS_KAFKA_BROKERS=localhost:9092
+export AEGIS_KAFKA_TOPICS=inference-logs
+export AEGIS_KAFKA_CONSUMER_GROUP=aegis-bytewax-workers
+python -m bytewax.run self_healing_observability.ingestion.kafka_dataflow:flow -w 4
+```
 
 ## Synthetic Drift Demo
 
@@ -128,12 +155,50 @@ The Control Center includes:
 - Active learning queue (top uncertain records) with manual "Label and Approve"
 - Embedding drift scatter (UMAP 2D when available)
 
+## Mission Control Frontend (React)
+
+The `frontend/` app provides a real-time Aegis-AI Mission Control dashboard built
+with Chakra UI, Framer Motion, and Apache ECharts.
+
+Highlights:
+
+- Dark mission-control layout with Fleet Overview, Security Logs, and Model Lineage sidebar
+- Vital signs header with pulsing circuit indicator (OK vs TRIPPED)
+- Circular Hui-Walter estimated accuracy gauge
+- Real-time MMD drift sparkline via WebSocket
+- Active-learning queue table with confidence and uncertainty heatmaps
+- Animated embedding-space drift view for chaos scenarios
+
+Run locally:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Optional frontend environment variables:
+
+- `VITE_API_BASE_URL` (default: `http://127.0.0.1:8000`)
+- `VITE_WS_URL` (default: derived from API URL + `/ws/telemetry`)
+
 ## Security Sidecar
 
 Prompt-injection defense is implemented as a FastAPI middleware with:
 
 - Tier 1 regex jailbreak detection
 - Tier 2 semantic similarity against adversarial templates (lightweight vector encoder)
+
+Optional distributed mode: run a dedicated gRPC sidecar for prompt interception
+with PII redaction and jailbreak detection.
+
+```bash
+python scripts/run_security_sidecar.py --host 0.0.0.0 --port 50051
+export AEGIS_SIDECAR_GRPC_TARGET=127.0.0.1:50051
+```
+
+The middleware will redact PII from `prompt` content before forwarding to inference
+and will trip the circuit breaker on detected jailbreak attempts.
 
 On detection, the circuit breaker opens immediately with status `SECURITY_ATTACK` and inference traffic is routed to fallback.
 
@@ -145,9 +210,9 @@ python scripts/chaos_monkey.py --per-phase 250
 
 Phases:
 
-- NORMAL
-- DRIFT
-- ADVERSARIAL
+- FEATURE_DRIFT
+- CONCEPT_FAILURE
+- SECURITY_BREACH
 
 The script reports breaker trip latency (ms) and retrain webhook firing latency (ms).
 
@@ -202,3 +267,20 @@ Gate policy:
 GitHub Actions workflow for pull requests:
 
 - `.github/workflows/ml_governance.yml`
+
+## Regulatory Deployment Gate
+
+Deployment-time governance gate based on latest model metadata:
+
+```bash
+python scripts/regulatory_deploy_gate.py --metadata-url https://example.com/latest-model-metadata.json
+```
+
+Policy:
+
+- Block if `bias > 0.10`
+- Block if `accuracy < 0.90`
+
+GitHub Actions workflow:
+
+- `.github/workflows/regulatory_deploy_gate.yml`

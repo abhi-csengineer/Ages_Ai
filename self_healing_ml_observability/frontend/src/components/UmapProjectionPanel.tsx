@@ -1,10 +1,4 @@
-import {
-  Box,
-  Checkbox,
-  HStack,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Checkbox, HStack, Text, VStack } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { EmbeddingPoint } from "../types/contracts";
@@ -38,8 +32,14 @@ export function UmapProjectionPanel({
   const [showLive, setShowLive] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const reference = useMemo(() => points.filter((p) => p.source === "reference"), [points]);
-  const live = useMemo(() => points.filter((p) => p.source === "live"), [points]);
+  const reference = useMemo(
+    () => points.filter((p) => p.source === "reference"),
+    [points],
+  );
+  const live = useMemo(
+    () => points.filter((p) => p.source === "live"),
+    [points],
+  );
 
   const bounds = useMemo(() => {
     const all = points.length > 0 ? points : [{ x: 0, y: 0 }];
@@ -70,8 +70,9 @@ export function UmapProjectionPanel({
     const width = 1000;
     const height = 420;
     const pad = 24;
-    const x = pad + (((p.x - bounds.minX) / bounds.spanX) * (width - pad * 2));
-    const y = height - pad - (((p.y - bounds.minY) / bounds.spanY) * (height - pad * 2));
+    const x = pad + ((p.x - bounds.minX) / bounds.spanX) * (width - pad * 2);
+    const y =
+      height - pad - ((p.y - bounds.minY) / bounds.spanY) * (height - pad * 2);
     return { x, y };
   };
 
@@ -88,7 +89,9 @@ export function UmapProjectionPanel({
   const toggleLiveSelection = (requestId: string) => {
     setSelectedIds((prev) => {
       const exists = prev.includes(requestId);
-      const next = exists ? prev.filter((id) => id !== requestId) : [...prev, requestId];
+      const next = exists
+        ? prev.filter((id) => id !== requestId)
+        : [...prev, requestId];
       onLassoSelect?.(next);
       return next;
     });
@@ -121,15 +124,28 @@ export function UmapProjectionPanel({
           borderColor="whiteAlpha.200"
           bg="whiteAlpha.100"
         >
-          <Text fontSize="xs" textTransform="uppercase" letterSpacing="0.08em" color="whiteAlpha.700">
+          <Text
+            fontSize="xs"
+            textTransform="uppercase"
+            letterSpacing="0.08em"
+            color="whiteAlpha.700"
+          >
             Legend Filters
           </Text>
-          <Checkbox isChecked={showReference} onChange={(e) => setShowReference(e.target.checked)} colorScheme="blue">
+          <Checkbox
+            isChecked={showReference}
+            onChange={(e) => setShowReference(e.target.checked)}
+            colorScheme="blue"
+          >
             <Text fontSize="sm" color="whiteAlpha.900">
               Reference
             </Text>
           </Checkbox>
-          <Checkbox isChecked={showLive} onChange={(e) => setShowLive(e.target.checked)} colorScheme="blue">
+          <Checkbox
+            isChecked={showLive}
+            onChange={(e) => setShowLive(e.target.checked)}
+            colorScheme="blue"
+          >
             <Text fontSize="sm" color="whiteAlpha.900">
               Live
             </Text>
@@ -140,9 +156,20 @@ export function UmapProjectionPanel({
         </VStack>
 
         <Box flex="1" bg="rgba(12, 16, 22, 0.55)" borderRadius="md" p={2}>
-          <svg viewBox="0 0 1000 420" width="100%" height="360" style={{ display: "block" }}>
+          <svg
+            viewBox="0 0 1000 420"
+            width="100%"
+            height="360"
+            style={{ display: "block" }}
+          >
             <defs>
-              <filter id="live-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <filter
+                id="live-glow"
+                x="-50%"
+                y="-50%"
+                width="200%"
+                height="200%"
+              >
                 <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
                 <feMerge>
                   <feMergeNode in="coloredBlur" />
@@ -177,7 +204,10 @@ export function UmapProjectionPanel({
                     initial={{ opacity: 0, scale: 0.3 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.35, delay: Math.min(idx * 0.003, 0.35) }}
+                    transition={{
+                      duration: 0.35,
+                      delay: Math.min(idx * 0.003, 0.35),
+                    }}
                     style={{ mixBlendMode: "screen" }}
                   />
                 );
@@ -198,7 +228,10 @@ export function UmapProjectionPanel({
                     initial={{ opacity: 0, scale: 0.2 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.45, delay: Math.min(idx * 0.004, 0.45) }}
+                    transition={{
+                      duration: 0.45,
+                      delay: Math.min(idx * 0.004, 0.45),
+                    }}
                     whileHover={{ scale: 1.25 }}
                     onClick={() => toggleLiveSelection(p.request_id)}
                     style={{ mixBlendMode: "screen", cursor: "pointer" }}
@@ -209,7 +242,12 @@ export function UmapProjectionPanel({
             {showLive &&
               streamOrbs.map((orb) => {
                 const pt = projectOrb(orb);
-                const color = orb.status === "ATTACK" ? "#FB7185" : orb.status === "DRIFT" ? "#F97316" : "#22D3EE";
+                const color =
+                  orb.status === "ATTACK"
+                    ? "#FB7185"
+                    : orb.status === "DRIFT"
+                      ? "#F97316"
+                      : "#22D3EE";
                 return (
                   <MotionCircle
                     key={orb.id}
@@ -229,10 +267,18 @@ export function UmapProjectionPanel({
         </Box>
       </HStack>
 
-      <Box mt={3} p={3} borderRadius="md" bg="whiteAlpha.100" border="1px solid" borderColor="whiteAlpha.200">
+      <Box
+        mt={3}
+        p={3}
+        borderRadius="md"
+        bg="whiteAlpha.100"
+        border="1px solid"
+        borderColor="whiteAlpha.200"
+      >
         <Text fontSize="sm" color="whiteAlpha.900">
-          Prescriptive Summary: The Live cluster has shifted {axisShiftPct.toFixed(0)}% along Axis-1. This matches the
-          MMD Drift Magnitude of {mmdDrift.toFixed(4)}.
+          Prescriptive Summary: The Live cluster has shifted{" "}
+          {axisShiftPct.toFixed(0)}% along Axis-1. This matches the MMD Drift
+          Magnitude of {mmdDrift.toFixed(4)}.
         </Text>
       </Box>
     </Box>

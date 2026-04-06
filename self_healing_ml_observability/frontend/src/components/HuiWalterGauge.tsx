@@ -15,13 +15,24 @@ export function HuiWalterGauge({ accuracy }: HuiWalterGaugeProps) {
   return (
     <Box p={4} layerStyle="glassPanel">
       <VStack spacing={3} align="start">
-        <Text fontSize="xs" textTransform="uppercase" letterSpacing="0.12em" color="whiteAlpha.700">
+        <Text
+          fontSize="xs"
+          textTransform="uppercase"
+          letterSpacing="0.12em"
+          color="whiteAlpha.700"
+        >
           Vigor Gauge · Hui-Walter Accuracy
         </Text>
         <Box position="relative" w="190px" h="132px">
           <svg viewBox="0 0 200 140" width="100%" height="100%">
             <defs>
-              <linearGradient id="vigor-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient
+                id="vigor-gradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <stop offset="0%" stopColor="#22D3EE" />
                 <stop offset="100%" stopColor="#8B5CF6" />
               </linearGradient>
@@ -55,13 +66,24 @@ export function HuiWalterGauge({ accuracy }: HuiWalterGaugeProps) {
                 strokeWidth="3"
                 strokeLinecap="round"
                 animate={{ rotate: needleDeg }}
-                transition={{ type: "spring", stiffness: 130, damping: 12, mass: 0.55 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 130,
+                  damping: 12,
+                  mass: 0.55,
+                }}
                 style={{ transformOrigin: "0px 0px" }}
               />
               <circle r="6" fill="#A5F3FC" />
             </g>
           </svg>
-          <Box position="absolute" inset="0" display="grid" placeItems="end center" pb="6px">
+          <Box
+            position="absolute"
+            inset="0"
+            display="grid"
+            placeItems="end center"
+            pb="6px"
+          >
             <Text fontSize="2xl" fontWeight="semibold" color="#C4B5FD">
               {pct.toFixed(1)}%
             </Text>

@@ -9,7 +9,11 @@ interface VitalSignsHeaderProps {
   status: string;
 }
 
-export function VitalSignsHeader({ tripped, connected, status }: VitalSignsHeaderProps) {
+export function VitalSignsHeader({
+  tripped,
+  connected,
+  status,
+}: VitalSignsHeaderProps) {
   return (
     <Box
       p={4}
@@ -21,7 +25,12 @@ export function VitalSignsHeader({ tripped, connected, status }: VitalSignsHeade
     >
       <HStack justify="space-between" align="center">
         <Box>
-          <Text fontSize="xs" textTransform="uppercase" color="whiteAlpha.700" letterSpacing="0.12em">
+          <Text
+            fontSize="xs"
+            textTransform="uppercase"
+            color="whiteAlpha.700"
+            letterSpacing="0.12em"
+          >
             Vital Signs
           </Text>
           <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
@@ -35,7 +44,11 @@ export function VitalSignsHeader({ tripped, connected, status }: VitalSignsHeade
             h="14px"
             borderRadius="full"
             bg={tripped ? "red.400" : "green.400"}
-            boxShadow={tripped ? "0 0 24px rgba(248, 113, 113, 0.95)" : "0 0 16px rgba(34, 197, 94, 0.9)"}
+            boxShadow={
+              tripped
+                ? "0 0 24px rgba(248, 113, 113, 0.95)"
+                : "0 0 16px rgba(34, 197, 94, 0.9)"
+            }
             animate={
               tripped
                 ? { scale: [1, 1.25, 1], opacity: [1, 0.7, 1] }
@@ -43,10 +56,20 @@ export function VitalSignsHeader({ tripped, connected, status }: VitalSignsHeade
             }
             transition={{ duration: tripped ? 0.9 : 2.0, repeat: Infinity }}
           />
-          <Badge colorScheme={connected ? "green" : "orange"} px={2} py={1} borderRadius="md">
+          <Badge
+            colorScheme={connected ? "green" : "orange"}
+            px={2}
+            py={1}
+            borderRadius="md"
+          >
             {connected ? "LIVE" : "RECONNECTING"}
           </Badge>
-          <Badge colorScheme={tripped ? "red" : "green"} px={2} py={1} borderRadius="md">
+          <Badge
+            colorScheme={tripped ? "red" : "green"}
+            px={2}
+            py={1}
+            borderRadius="md"
+          >
             {status}
           </Badge>
         </HStack>

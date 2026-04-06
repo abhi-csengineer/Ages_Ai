@@ -24,17 +24,29 @@ import { EvidentlyDriftWidget } from "./components/EvidentlyDriftWidget";
 import { HuiWalterGauge } from "./components/HuiWalterGauge";
 import { MmdSparkline } from "./components/MmdSparkline";
 import { UmapProjectionPanel } from "./components/UmapProjectionPanel";
-import { collectHealerSamples, fetchActiveLearningCandidates, fetchEmbeddingPoints, inferGemini } from "./hooks/useApi";
+import {
+  collectHealerSamples,
+  fetchActiveLearningCandidates,
+  fetchEmbeddingPoints,
+  inferGemini,
+} from "./hooks/useApi";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { ActiveLearningCandidateItem, EmbeddingPoint } from "./types/contracts";
 
 function QuickStat({ label, value }: { label: string; value: string }) {
   return (
     <Stat p={4} layerStyle="glassPanel">
-      <StatLabel color="whiteAlpha.700" fontSize="xs" textTransform="uppercase" letterSpacing="0.1em">
+      <StatLabel
+        color="whiteAlpha.700"
+        fontSize="xs"
+        textTransform="uppercase"
+        letterSpacing="0.1em"
+      >
         {label}
       </StatLabel>
-      <StatNumber fontSize="2xl" color="whiteAlpha.900">{value}</StatNumber>
+      <StatNumber fontSize="2xl" color="whiteAlpha.900">
+        {value}
+      </StatNumber>
     </Stat>
   );
 }
@@ -42,13 +54,17 @@ function QuickStat({ label, value }: { label: string; value: string }) {
 export default function App() {
   const { telemetry, mmdSeries, streamOrbs } = useWebSocket();
 
-  const [candidates, setCandidates] = useState<ActiveLearningCandidateItem[]>([]);
+  const [candidates, setCandidates] = useState<ActiveLearningCandidateItem[]>(
+    [],
+  );
   const [embeddingPoints, setEmbeddingPoints] = useState<EmbeddingPoint[]>([]);
   const [selectedRequestIds, setSelectedRequestIds] = useState<string[]>([]);
   const [approveLoading, setApproveLoading] = useState(false);
   const [approveProgress, setApproveProgress] = useState(0);
   const [pulseTick, setPulseTick] = useState(0);
-  const [prompt, setPrompt] = useState("Summarize the top model monitoring risks from the latest drift event.");
+  const [prompt, setPrompt] = useState(
+    "Summarize the top model monitoring risks from the latest drift event.",
+  );
   const [latestGeminiResponse, setLatestGeminiResponse] = useState("");
   const [inferLoading, setInferLoading] = useState(false);
 
@@ -142,9 +158,19 @@ export default function App() {
   };
 
   return (
-    <Box maxW="1280px" mx="auto" px={{ base: 3, md: 6 }} py={{ base: 4, md: 8 }} pb={{ base: "260px", md: "290px" }}>
+    <Box
+      maxW="1280px"
+      mx="auto"
+      px={{ base: 3, md: 6 }}
+      py={{ base: 4, md: 8 }}
+      pb={{ base: "260px", md: "290px" }}
+    >
       <VStack align="stretch" spacing={4}>
-        <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="whiteAlpha.900">
+        <Text
+          fontSize={{ base: "2xl", md: "3xl" }}
+          fontWeight="bold"
+          color="whiteAlpha.900"
+        >
           Aegis-AI Command Center
         </Text>
 
@@ -158,13 +184,22 @@ export default function App() {
 
         <Tabs variant="line" colorScheme="blue" isLazy>
           <TabList borderColor="whiteAlpha.300">
-            <Tab color="whiteAlpha.800" _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}>
+            <Tab
+              color="whiteAlpha.800"
+              _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}
+            >
               Summary
             </Tab>
-            <Tab color="whiteAlpha.800" _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}>
+            <Tab
+              color="whiteAlpha.800"
+              _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}
+            >
               Data Drift
             </Tab>
-            <Tab color="whiteAlpha.800" _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}>
+            <Tab
+              color="whiteAlpha.800"
+              _selected={{ color: "#63B3ED", borderColor: "#63B3ED" }}
+            >
               Model Health
             </Tab>
           </TabList>
@@ -195,8 +230,18 @@ export default function App() {
                       Run Live Gemini Proxy Inference
                     </Button>
                     {latestGeminiResponse ? (
-                      <Box p={3} borderRadius="md" bg="whiteAlpha.100" border="1px solid" borderColor="whiteAlpha.200">
-                        <Text fontSize="sm" color="whiteAlpha.900" noOfLines={5}>
+                      <Box
+                        p={3}
+                        borderRadius="md"
+                        bg="whiteAlpha.100"
+                        border="1px solid"
+                        borderColor="whiteAlpha.200"
+                      >
+                        <Text
+                          fontSize="sm"
+                          color="whiteAlpha.900"
+                          noOfLines={5}
+                        >
                           {latestGeminiResponse}
                         </Text>
                       </Box>
@@ -204,10 +249,22 @@ export default function App() {
                   </VStack>
                 </Box>
 
-                <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
-                  <QuickStat label="Hui-Walter Accuracy" value={telemetry.hui_walter_estimated_accuracy.toFixed(4)} />
-                  <QuickStat label="MMD Drift" value={telemetry.mmd_drift_score.toFixed(4)} />
-                  <QuickStat label="Bias Score" value={telemetry.bias_score.toFixed(4)} />
+                <Grid
+                  templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
+                  gap={4}
+                >
+                  <QuickStat
+                    label="Hui-Walter Accuracy"
+                    value={telemetry.hui_walter_estimated_accuracy.toFixed(4)}
+                  />
+                  <QuickStat
+                    label="MMD Drift"
+                    value={telemetry.mmd_drift_score.toFixed(4)}
+                  />
+                  <QuickStat
+                    label="Bias Score"
+                    value={telemetry.bias_score.toFixed(4)}
+                  />
                 </Grid>
                 <MmdSparkline values={mmdSeries} />
               </VStack>
@@ -215,7 +272,10 @@ export default function App() {
 
             <TabPanel px={0} pt={4}>
               <VStack align="stretch" spacing={4}>
-                <EvidentlyDriftWidget currentSeries={mmdSeries} driftScore={telemetry.mmd_drift_score} />
+                <EvidentlyDriftWidget
+                  currentSeries={mmdSeries}
+                  driftScore={telemetry.mmd_drift_score}
+                />
                 <UmapProjectionPanel
                   points={embeddingPoints}
                   mmdDrift={telemetry.mmd_drift_score}
@@ -228,12 +288,20 @@ export default function App() {
 
             <TabPanel px={0} pt={4}>
               <VStack align="stretch" spacing={4}>
-                <Grid templateColumns={{ base: "1fr", xl: "300px 1fr" }} gap={4}>
+                <Grid
+                  templateColumns={{ base: "1fr", xl: "300px 1fr" }}
+                  gap={4}
+                >
                   <GridItem>
-                    <HuiWalterGauge accuracy={telemetry.hui_walter_estimated_accuracy} />
+                    <HuiWalterGauge
+                      accuracy={telemetry.hui_walter_estimated_accuracy}
+                    />
                   </GridItem>
                   <GridItem>
-                    <QuickStat label="Queued For Healer" value={String(visibleCandidates.length)} />
+                    <QuickStat
+                      label="Queued For Healer"
+                      value={String(visibleCandidates.length)}
+                    />
                   </GridItem>
                 </Grid>
               </VStack>

@@ -17,7 +17,8 @@ const EMPTY_TELEMETRY: TelemetrySnapshot = {
 };
 
 export function useTelemetrySocket() {
-  const [telemetry, setTelemetry] = useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
+  const [telemetry, setTelemetry] =
+    useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
   const [connected, setConnected] = useState(false);
   const [mmdSeries, setMmdSeries] = useState<number[]>([]);
   const lastDetectionCount = useRef<number>(-1);
@@ -33,7 +34,9 @@ export function useTelemetrySocket() {
       const parsed = JSON.parse(ev.data) as TelemetrySnapshot;
       setTelemetry(parsed);
 
-      const batchTick = parsed.batch_event || parsed.detection_count !== lastDetectionCount.current;
+      const batchTick =
+        parsed.batch_event ||
+        parsed.detection_count !== lastDetectionCount.current;
       if (batchTick) {
         setMmdSeries((prev) => {
           const next = [...prev, parsed.mmd_drift_score];
@@ -47,8 +50,10 @@ export function useTelemetrySocket() {
   }, []);
 
   const tripped = useMemo(
-    () => telemetry.circuit_status === "DRIFT_BIAS" || telemetry.circuit_status === "FALLBACK_MODE",
-    [telemetry.circuit_status]
+    () =>
+      telemetry.circuit_status === "DRIFT_BIAS" ||
+      telemetry.circuit_status === "FALLBACK_MODE",
+    [telemetry.circuit_status],
   );
 
   return {

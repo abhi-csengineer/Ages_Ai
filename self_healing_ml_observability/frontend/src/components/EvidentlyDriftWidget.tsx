@@ -6,7 +6,10 @@ interface EvidentlyDriftWidgetProps {
   driftScore: number;
 }
 
-function driftStatus(score: number): { label: string; colorScheme: "green" | "yellow" | "red" } {
+function driftStatus(score: number): {
+  label: string;
+  colorScheme: "green" | "yellow" | "red";
+} {
   if (score < 0.1) {
     return { label: "LOW", colorScheme: "green" };
   }
@@ -16,9 +19,15 @@ function driftStatus(score: number): { label: string; colorScheme: "green" | "ye
   return { label: "HIGH", colorScheme: "red" };
 }
 
-export function EvidentlyDriftWidget({ currentSeries, driftScore }: EvidentlyDriftWidgetProps) {
-  const curr = currentSeries.length > 3 ? currentSeries.slice(-36) : [0.02, 0.03, 0.025, 0.04, 0.038, 0.042];
-  const baseline = curr.map((v, i) => Math.max(0, v * (0.7 + ((i % 4) * 0.05))));
+export function EvidentlyDriftWidget({
+  currentSeries,
+  driftScore,
+}: EvidentlyDriftWidgetProps) {
+  const curr =
+    currentSeries.length > 3
+      ? currentSeries.slice(-36)
+      : [0.02, 0.03, 0.025, 0.04, 0.038, 0.042];
+  const baseline = curr.map((v, i) => Math.max(0, v * (0.7 + (i % 4) * 0.05)));
   const status = driftStatus(driftScore);
 
   return (
@@ -28,7 +37,13 @@ export function EvidentlyDriftWidget({ currentSeries, driftScore }: EvidentlyDri
           <Text fontSize="md" fontWeight="bold" color="whiteAlpha.900">
             Data Drift Distribution (MMD)
           </Text>
-          <Badge colorScheme={status.colorScheme} px={3} py={1} borderRadius="full" fontSize="xs">
+          <Badge
+            colorScheme={status.colorScheme}
+            px={3}
+            py={1}
+            borderRadius="full"
+            fontSize="xs"
+          >
             Drift Score {driftScore.toFixed(4)} · {status.label}
           </Badge>
         </HStack>

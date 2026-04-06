@@ -12,7 +12,10 @@ const breath = keyframes`
 `;
 
 export function CircuitBreakerPulse({ status }: CircuitBreakerPulseProps) {
-  const tripped = status === "DRIFT_BIAS" || status === "FALLBACK_MODE" || status === "SECURITY_ATTACK";
+  const tripped =
+    status === "DRIFT_BIAS" ||
+    status === "FALLBACK_MODE" ||
+    status === "SECURITY_ATTACK";
   const color = tripped ? "#FF5D73" : "#22C55E";
 
   return (
@@ -23,7 +26,11 @@ export function CircuitBreakerPulse({ status }: CircuitBreakerPulseProps) {
           h="14px"
           borderRadius="full"
           bg={color}
-          boxShadow={tripped ? "0 0 20px rgba(255, 93, 115, 0.9)" : "0 0 20px rgba(34, 197, 94, 0.9)"}
+          boxShadow={
+            tripped
+              ? "0 0 20px rgba(255, 93, 115, 0.9)"
+              : "0 0 20px rgba(34, 197, 94, 0.9)"
+          }
           animation={`${breath} 1.4s ease-in-out infinite`}
         />
         <Text color="whiteAlpha.900" fontWeight="bold" letterSpacing="0.03em">

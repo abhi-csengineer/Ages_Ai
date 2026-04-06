@@ -24,7 +24,8 @@ export interface StreamOrb {
 }
 
 export function useWebSocket() {
-  const [telemetry, setTelemetry] = useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
+  const [telemetry, setTelemetry] =
+    useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
   const [connected, setConnected] = useState(false);
   const [mmdSeries, setMmdSeries] = useState<number[]>([]);
   const [streamOrbs, setStreamOrbs] = useState<StreamOrb[]>([]);
@@ -44,7 +45,12 @@ export function useWebSocket() {
       setTelemetry((prev) => ({
         ...prev,
         timestamp: parsed.timestamp,
-        circuit_status: parsed.status === "ATTACK" ? "SECURITY_ATTACK" : parsed.status === "DRIFT" ? "DRIFT_BIAS" : "OK",
+        circuit_status:
+          parsed.status === "ATTACK"
+            ? "SECURITY_ATTACK"
+            : parsed.status === "DRIFT"
+              ? "DRIFT_BIAS"
+              : "OK",
         hui_walter_estimated_accuracy: parsed.accuracy,
         mmd_drift_score: parsed.drift_magnitude,
         batch_event: true,
@@ -66,8 +72,10 @@ export function useWebSocket() {
   }, []);
 
   const tripped = useMemo(
-    () => telemetry.circuit_status === "DRIFT_BIAS" || telemetry.circuit_status === "FALLBACK_MODE",
-    [telemetry.circuit_status]
+    () =>
+      telemetry.circuit_status === "DRIFT_BIAS" ||
+      telemetry.circuit_status === "FALLBACK_MODE",
+    [telemetry.circuit_status],
   );
 
   return {

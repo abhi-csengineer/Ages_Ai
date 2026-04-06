@@ -18,7 +18,12 @@ interface ActiveLearningTableProps {
   onApprove: () => void;
 }
 
-export function ActiveLearningTable({ items, inFlight, progress, onApprove }: ActiveLearningTableProps) {
+export function ActiveLearningTable({
+  items,
+  inFlight,
+  progress,
+  onApprove,
+}: ActiveLearningTableProps) {
   const MotionBox = motion(Box);
 
   return (
@@ -34,7 +39,12 @@ export function ActiveLearningTable({ items, inFlight, progress, onApprove }: Ac
     >
       <HStack justify="space-between" mb={3}>
         <VStack align="start" spacing={0}>
-          <Text fontSize="xs" textTransform="uppercase" letterSpacing="0.12em" color="whiteAlpha.700">
+          <Text
+            fontSize="xs"
+            textTransform="uppercase"
+            letterSpacing="0.12em"
+            color="whiteAlpha.700"
+          >
             Active Learning Queue
           </Text>
           <Text fontSize="sm" color="whiteAlpha.800">
@@ -50,14 +60,24 @@ export function ActiveLearningTable({ items, inFlight, progress, onApprove }: Ac
           loadingText="Triggering retrain"
           _hover={{
             transform: "translateY(-1px)",
-            boxShadow: "0 0 0 1px rgba(255,255,255,0.16), 0 8px 20px rgba(251, 113, 133, 0.18)",
+            boxShadow:
+              "0 0 0 1px rgba(255,255,255,0.16), 0 8px 20px rgba(251, 113, 133, 0.18)",
           }}
         >
           Label & Approve
         </Button>
       </HStack>
 
-      {inFlight && <Progress mb={3} size="sm" hasStripe isAnimated value={progress} colorScheme="orange" />}
+      {inFlight && (
+        <Progress
+          mb={3}
+          size="sm"
+          hasStripe
+          isAnimated
+          value={progress}
+          colorScheme="orange"
+        />
+      )}
 
       <Box
         overflowX="auto"
@@ -82,10 +102,18 @@ export function ActiveLearningTable({ items, inFlight, progress, onApprove }: Ac
                 scrollSnapAlign="start"
                 initial={{ opacity: 0, y: 14, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.35, delay: Math.min(idx * 0.06, 0.36) }}
+                transition={{
+                  duration: 0.35,
+                  delay: Math.min(idx * 0.06, 0.36),
+                }}
               >
                 <VStack align="stretch" spacing={2}>
-                  <Text fontFamily="mono" fontSize="xs" color="whiteAlpha.900" noOfLines={1}>
+                  <Text
+                    fontFamily="mono"
+                    fontSize="xs"
+                    color="whiteAlpha.900"
+                    noOfLines={1}
+                  >
                     {item.request_id}
                   </Text>
                   <SimpleGrid columns={2} spacing={2}>

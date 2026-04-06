@@ -25,7 +25,8 @@ export const theme = extendTheme({
       body: {
         bg: "#121721",
         color: "#E6EDF3",
-        backgroundImage: "radial-gradient(circle at 30% 20%, #121721 0%, #080A0F 72%)",
+        backgroundImage:
+          "radial-gradient(circle at 30% 20%, #121721 0%, #080A0F 72%)",
         fontWeight: 300,
       },
     },

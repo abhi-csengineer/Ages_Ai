@@ -10,7 +10,13 @@ export function MmdSparkline({ values }: MmdSparklineProps) {
 
   return (
     <Box p={4} layerStyle="glassPanel">
-      <Text fontSize="xs" textTransform="uppercase" letterSpacing="0.12em" color="whiteAlpha.700" mb={2}>
+      <Text
+        fontSize="xs"
+        textTransform="uppercase"
+        letterSpacing="0.12em"
+        color="whiteAlpha.700"
+        mb={2}
+      >
         MMD Drift Magnitude
       </Text>
       <ReactECharts

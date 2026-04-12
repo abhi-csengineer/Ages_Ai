@@ -52,7 +52,6 @@ export default function App() {
   const [pulseTick, setPulseTick] = useState(0);
   const [mockOrbs, setMockOrbs] = useState<StreamOrb[]>([]);
 
-
   /* 4. useEffect — fetch real embedding points */
   useEffect(() => {
     const tick = async () => {
@@ -63,7 +62,9 @@ export default function App() {
         ]);
         setQueueCount(cands.items.length);
         setRealPoints(embeds.points);
-      } catch { /* backend offline */ }
+      } catch {
+        /* backend offline */
+      }
     };
     tick();
     const timer = setInterval(tick, 5000);
@@ -76,17 +77,28 @@ export default function App() {
       setPulseTick((t) => t + 1);
       setMockOrbs((prev) => {
         const statuses: Array<"OK" | "DRIFT" | "ATTACK"> = [
-          "OK", "OK", "OK", "DRIFT", "DRIFT", "ATTACK",
+          "OK",
+          "OK",
+          "OK",
+          "DRIFT",
+          "DRIFT",
+          "ATTACK",
         ];
         const status = statuses[Math.floor(Math.random() * statuses.length)];
         const orb: StreamOrb = {
           id: `mo-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-          x: status === "ATTACK" ? 0.82 + (Math.random() - 0.5) * 0.12
-            : status === "DRIFT" ? 0.58 + (Math.random() - 0.5) * 0.2
-            : 0.35 + (Math.random() - 0.5) * 0.25,
-          y: status === "ATTACK" ? 0.2 + (Math.random() - 0.5) * 0.15
-            : status === "DRIFT" ? 0.55 + (Math.random() - 0.5) * 0.25
-            : 0.45 + (Math.random() - 0.5) * 0.25,
+          x:
+            status === "ATTACK"
+              ? 0.82 + (Math.random() - 0.5) * 0.12
+              : status === "DRIFT"
+                ? 0.58 + (Math.random() - 0.5) * 0.2
+                : 0.35 + (Math.random() - 0.5) * 0.25,
+          y:
+            status === "ATTACK"
+              ? 0.2 + (Math.random() - 0.5) * 0.15
+              : status === "DRIFT"
+                ? 0.55 + (Math.random() - 0.5) * 0.25
+                : 0.45 + (Math.random() - 0.5) * 0.25,
           status,
         };
         return [...prev, orb].slice(-60);
@@ -105,7 +117,8 @@ export default function App() {
   }, [telemetry.batch_event]);
 
   /* ── Derived data ── */
-  const embeddingPoints = realPoints.length > 50 ? realPoints : [...MOCK_POINTS, ...realPoints];
+  const embeddingPoints =
+    realPoints.length > 50 ? realPoints : [...MOCK_POINTS, ...realPoints];
   const accuracy = telemetry.hui_walter_estimated_accuracy;
   const drift = telemetry.mmd_drift_score;
   const bias = telemetry.bias_score;
@@ -126,7 +139,14 @@ export default function App() {
   );
 
   return (
-    <Box h="100vh" w="100vw" display="flex" flexDir="column" bg="aegis.black" overflow="hidden">
+    <Box
+      h="100vh"
+      w="100vw"
+      display="flex"
+      flexDir="column"
+      bg="aegis.black"
+      overflow="hidden"
+    >
       <HeaderBar
         connected={connected}
         circuitStatus={telemetry.circuit_status}
@@ -149,25 +169,44 @@ export default function App() {
           gridColumn="span 4"
           gridRow="span 1"
           minH={0}
-          custom={0} variants={tileVariants} initial="hidden" animate="visible"
+          custom={0}
+          variants={tileVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <VigorMeter accuracy={accuracy} mmdDrift={drift} biasScore={bias} mmdSeries={mmds} />
+          <VigorMeter
+            accuracy={accuracy}
+            mmdDrift={drift}
+            biasScore={bias}
+            mmdSeries={mmds}
+          />
         </MotionBox>
 
         <MotionBox
           gridColumn="span 5"
           gridRow="span 1"
           minH={0}
-          custom={1} variants={tileVariants} initial="hidden" animate="visible"
+          custom={1}
+          variants={tileVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <VoidUmap points={embeddingPoints} mmdDrift={drift} streamOrbs={orbs} pulseTick={pulseTick} />
+          <VoidUmap
+            points={embeddingPoints}
+            mmdDrift={drift}
+            streamOrbs={orbs}
+            pulseTick={pulseTick}
+          />
         </MotionBox>
 
         <MotionBox
           gridColumn="span 3"
           gridRow="span 1"
           minH={0}
-          custom={2} variants={tileVariants} initial="hidden" animate="visible"
+          custom={2}
+          variants={tileVariants}
+          initial="hidden"
+          animate="visible"
         >
           <InferenceSidecar securityLog={securityLog} />
         </MotionBox>
@@ -177,7 +216,10 @@ export default function App() {
           gridColumn="span 6"
           gridRow="span 1"
           minH={0}
-          custom={3} variants={tileVariants} initial="hidden" animate="visible"
+          custom={3}
+          variants={tileVariants}
+          initial="hidden"
+          animate="visible"
         >
           <ModelComparisonMatrix models={modelComparison} />
         </MotionBox>
@@ -186,7 +228,10 @@ export default function App() {
           gridColumn="span 6"
           gridRow="span 1"
           minH={0}
-          custom={4} variants={tileVariants} initial="hidden" animate="visible"
+          custom={4}
+          variants={tileVariants}
+          initial="hidden"
+          animate="visible"
         >
           <ParameterRootCause parameters={parameterDrifts} />
         </MotionBox>

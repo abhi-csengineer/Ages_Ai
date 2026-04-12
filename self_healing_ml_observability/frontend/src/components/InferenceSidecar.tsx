@@ -17,7 +17,10 @@ interface InferenceSidecarProps {
   securityLog: SecurityLogEntry[];
 }
 
-const TAG_COLORS: Record<SecurityLogEntry["type"], { bg: string; color: string; tag: string }> = {
+const TAG_COLORS: Record<
+  SecurityLogEntry["type"],
+  { bg: string; color: string; tag: string }
+> = {
   BLOCKED: { bg: "rgba(255,0,51,0.15)", color: "#FF0033", tag: "[BLKD]" },
   REDACTED: { bg: "rgba(255,77,0,0.15)", color: "#FF4D00", tag: "[RDCT]" },
   PASSED: { bg: "rgba(204,255,0,0.08)", color: "#CCFF00", tag: "[PASS]" },
@@ -52,9 +55,10 @@ export function InferenceSidecar({ securityLog }: InferenceSidecarProps) {
     setErrorText(null);
     try {
       const resp = await inferSidecar({
-        request_id: typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : `${Date.now()}`,
+        request_id:
+          typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}`,
         prompt: text,
         population_id: 0,
         demographic_group: "general",
@@ -145,11 +149,24 @@ export function InferenceSidecar({ securityLog }: InferenceSidecarProps) {
             second: "2-digit",
           });
           return (
-            <Box key={`${entry.timestamp}-${i}`} px={2} py={1} bg={cfg.bg} borderBottom="1px solid" borderColor="rgba(45,55,72,0.3)">
+            <Box
+              key={`${entry.timestamp}-${i}`}
+              px={2}
+              py={1}
+              bg={cfg.bg}
+              borderBottom="1px solid"
+              borderColor="rgba(45,55,72,0.3)"
+            >
               <Text fontSize="0.55rem" lineHeight="1.4" wordBreak="break-word">
-                <Text as="span" color="aegis.textDim" mr={1}>{ts}</Text>
-                <Text as="span" color={cfg.color} fontWeight={700} mr={1}>{cfg.tag}</Text>
-                <Text as="span" color="aegis.text">{entry.message}</Text>
+                <Text as="span" color="aegis.textDim" mr={1}>
+                  {ts}
+                </Text>
+                <Text as="span" color={cfg.color} fontWeight={700} mr={1}>
+                  {cfg.tag}
+                </Text>
+                <Text as="span" color="aegis.text">
+                  {entry.message}
+                </Text>
               </Text>
             </Box>
           );
@@ -165,7 +182,10 @@ export function InferenceSidecar({ securityLog }: InferenceSidecarProps) {
         justify="space-between"
       >
         <HStack spacing={3}>
-          <Text fontSize="0.55rem" color={liveMode ? "aegis.lime" : "aegis.textDim"}>
+          <Text
+            fontSize="0.55rem"
+            color={liveMode ? "aegis.lime" : "aegis.textDim"}
+          >
             MODE: {liveMode ? "LIVE" : "MANUAL"}
           </Text>
           <Text fontSize="0.55rem" color="aegis.textDim">
@@ -194,7 +214,9 @@ export function InferenceSidecar({ securityLog }: InferenceSidecarProps) {
         spacing={1}
         flexShrink={0}
       >
-        <Text fontSize="0.55rem" color="aegis.lime" flexShrink={0}>▸_</Text>
+        <Text fontSize="0.55rem" color="aegis.lime" flexShrink={0}>
+          ▸_
+        </Text>
         <Input
           size="xs"
           variant="unstyled"
@@ -219,7 +241,9 @@ export function InferenceSidecar({ securityLog }: InferenceSidecarProps) {
       </HStack>
       {errorText ? (
         <Box px={2} py={1} borderTop="1px solid" borderColor="aegis.border">
-          <Text fontSize="0.55rem" color="aegis.red">{errorText}</Text>
+          <Text fontSize="0.55rem" color="aegis.red">
+            {errorText}
+          </Text>
         </Box>
       ) : null}
       <Box px={2} py={1} borderTop="1px solid" borderColor="aegis.border">

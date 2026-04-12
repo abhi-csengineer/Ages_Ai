@@ -110,6 +110,6 @@ export interface ModelComparisonRow {
 
 export interface ParameterDrift {
   name: string;
-  drift: number;      /* 0-1 scale */
-  label: string;      /* display name */
+  drift: number; /* 0-1 scale */
+  label: string; /* display name */
 }

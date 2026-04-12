@@ -31,22 +31,37 @@ export interface StreamOrb {
 }
 
 /* ── simulated security events for demo ── */
-const SIMULATED_MESSAGES: Array<{ type: SecurityLogEntry["type"]; msg: string }> = [
-  { type: "BLOCKED", msg: "Prompt injection detected: 'ignore previous instructions'" },
-  { type: "REDACTED", msg: "PII redacted: email <REDACTED>@domain.com in response" },
+const SIMULATED_MESSAGES: Array<{
+  type: SecurityLogEntry["type"];
+  msg: string;
+}> = [
+  {
+    type: "BLOCKED",
+    msg: "Prompt injection detected: 'ignore previous instructions'",
+  },
+  {
+    type: "REDACTED",
+    msg: "PII redacted: email <REDACTED>@domain.com in response",
+  },
   { type: "PASSED", msg: "Inference request validated — no anomalies" },
   { type: "ANOMALY", msg: "Embedding drift detected on feature vector #47" },
   { type: "BLOCKED", msg: "Jailbreak attempt: role swap payload intercepted" },
   { type: "REDACTED", msg: "PII redacted: SSN ***-**-**** in user prompt" },
   { type: "PASSED", msg: "Gemini proxy response latency: 142ms — nominal" },
-  { type: "ANOMALY", msg: "Response divergence: cosine similarity 0.62 vs baseline 0.91" },
+  {
+    type: "ANOMALY",
+    msg: "Response divergence: cosine similarity 0.62 vs baseline 0.91",
+  },
   { type: "BLOCKED", msg: "Adversarial suffix detected — request quarantined" },
   { type: "REDACTED", msg: "PII redacted: phone +1-***-***-**** in context" },
   { type: "PASSED", msg: "Batch inference complete — 48 requests processed" },
   { type: "ANOMALY", msg: "MMD score spike: 0.34 > threshold 0.20" },
   { type: "BLOCKED", msg: "DAN-mode prompt pattern matched — blocked" },
   { type: "PASSED", msg: "Model checkpoint v2.4.1 health verified" },
-  { type: "REDACTED", msg: "PII redacted: credit card ****-****-****-**** in payload" },
+  {
+    type: "REDACTED",
+    msg: "PII redacted: credit card ****-****-****-**** in payload",
+  },
 ];
 
 const MAX_MMD_SERIES = 60;
@@ -111,7 +126,9 @@ function normalizeMessage(
           : new Date().toISOString(),
       request_id: String(parsed.request_id),
       status:
-        parsed.status === "ATTACK" || parsed.status === "DRIFT" || parsed.status === "OK"
+        parsed.status === "ATTACK" ||
+        parsed.status === "DRIFT" ||
+        parsed.status === "OK"
           ? parsed.status
           : "OK",
       accuracy: Number(parsed.accuracy ?? 0),
@@ -140,7 +157,8 @@ function normalizeMessage(
 
 export function useAegisStream() {
   /* ── public state (React renders only on RAF flush) ── */
-  const [telemetry, setTelemetry] = useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
+  const [telemetry, setTelemetry] =
+    useState<TelemetrySnapshot>(EMPTY_TELEMETRY);
   const [mmdSeries, setMmdSeries] = useState<number[]>([]);
   const [streamOrbs, setStreamOrbs] = useState<StreamOrb[]>([]);
   const [securityLog, setSecurityLog] = useState<SecurityLogEntry[]>([]);
@@ -272,7 +290,8 @@ export function useAegisStream() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (!mountedRef.current) return;
-      const sim = SIMULATED_MESSAGES[simIndexRef.current % SIMULATED_MESSAGES.length];
+      const sim =
+        SIMULATED_MESSAGES[simIndexRef.current % SIMULATED_MESSAGES.length];
       simIndexRef.current++;
       const entry: SecurityLogEntry = {
         timestamp: new Date().toISOString(),

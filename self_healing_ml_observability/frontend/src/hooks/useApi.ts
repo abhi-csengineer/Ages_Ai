@@ -1,9 +1,9 @@
 import {
   ActiveLearningCandidatesResponse,
   EmbeddingPointsResponse,
-  GeminiInferenceRequest,
-  GeminiInferenceResponse,
   RetrainWebhookResponse,
+  SidecarInferenceRequest,
+  SidecarInferenceResponse,
 } from "../types/contracts";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
@@ -52,19 +52,21 @@ export async function triggerRetrain(): Promise<RetrainWebhookResponse> {
   return (await res.json()) as RetrainWebhookResponse;
 }
 
-export async function inferGemini(
-  payload: GeminiInferenceRequest,
-): Promise<GeminiInferenceResponse> {
-  const res = await fetch(`${API_BASE}/api/v1/inference/gemini`, {
+export async function inferSidecar(
+  payload: SidecarInferenceRequest,
+): Promise<SidecarInferenceResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/inference`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    throw new Error(`gemini_inference_failed:${res.status}`);
+    throw new Error(`sidecar_inference_failed:${res.status}`);
   }
-  return (await res.json()) as GeminiInferenceResponse;
+  return (await res.json()) as SidecarInferenceResponse;
 }
+
+export const inferGemini = inferSidecar;
 
 export async function collectHealerSamples(
   requestIds: string[],
@@ -86,5 +88,5 @@ export function getTelemetryWsUrl(): string {
     return configured;
   }
   const base = API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/live-telemetry`;
+  return `${base}/ws/telemetry`;
 }

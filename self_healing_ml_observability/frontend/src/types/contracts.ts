@@ -71,3 +71,45 @@ export interface GeminiInferenceResponse {
   umap_x: number;
   umap_y: number;
 }
+
+export interface SidecarInferenceRequest {
+  request_id?: string;
+  prompt: string;
+  population_id?: number;
+  demographic_group?: string;
+}
+
+export interface SidecarInferenceResponse {
+  request_id: string;
+  response_text: string;
+  vigor: number;
+  drift: number;
+  coords: [number, number];
+  attribution: Record<string, number>;
+  log: string;
+  embedding_dim: number;
+  provider_model: string;
+}
+
+export interface SecurityLogEntry {
+  timestamp: string;
+  type: "BLOCKED" | "REDACTED" | "PASSED" | "ANOMALY";
+  message: string;
+  request_id?: string;
+}
+
+/* ── New types for Chakra dashboard ── */
+
+export interface ModelComparisonRow {
+  model: string;
+  accuracy: number;
+  driftPct: number;
+  vigor: number;
+  isShadow: boolean;
+}
+
+export interface ParameterDrift {
+  name: string;
+  drift: number;      /* 0-1 scale */
+  label: string;      /* display name */
+}

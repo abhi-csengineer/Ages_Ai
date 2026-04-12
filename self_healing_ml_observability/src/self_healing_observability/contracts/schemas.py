@@ -175,3 +175,29 @@ class LiveTelemetryPayload(BaseModel):
     drift_magnitude: float
     umap_x: float = Field(ge=0.0, le=1.0)
     umap_y: float = Field(ge=0.0, le=1.0)
+
+
+class SidecarInferenceRequest(BaseModel):
+    request_id: str = Field(default_factory=lambda: str(datetime.now(timezone.utc).timestamp()))
+    prompt: str = Field(..., min_length=1)
+    population_id: int = Field(0, ge=0, le=1)
+    demographic_group: str = Field(default="unknown", min_length=1)
+
+
+class SidecarInferenceResponse(BaseModel):
+    request_id: str
+    response_text: str
+    vigor: float = Field(ge=0.0, le=1.0)
+    drift: float = Field(ge=0.0, le=100.0)
+    coords: list[float] = Field(default_factory=list, min_length=2, max_length=2)
+    attribution: dict[str, int] = Field(default_factory=dict)
+    log: str
+    embedding_dim: int
+    provider_model: str
+
+
+class SidecarRetrainResponse(BaseModel):
+    accepted: bool
+    status: Literal["success"]
+    duration_seconds: int
+    log: str

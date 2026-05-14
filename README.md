@@ -1,6 +1,6 @@
 # Aegis-AI // Tactical LLM Governance & Observability
 
-**Aegis-AI** is a high-performance, deep-tech observability "sidecar" designed to protect and monitor Large Language Models (LLMs) in production. It moves beyond standard logging by performing **Real-Time Vector Mathematics** to detect semantic drift and estimate model accuracy without human labeling.
+**Aegis-AI** is a high-performance, deep-tech observability "sidecar" designed to protect and monitor Large Language Models (LLMs) in production. It moves beyond standard logging by performing **Real-Time Vector Mathematics** to detect semantic drift and estimate model accuracy without human labeling..
 
 ---
 

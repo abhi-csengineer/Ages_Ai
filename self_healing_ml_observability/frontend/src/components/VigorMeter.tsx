@@ -1,5 +1,6 @@
 import { Box, Flex, HStack, Text, Stat, StatLabel, StatNumber } from "@chakra-ui/react";
 import { motion } from "framer-motion";
+import { DashboardCard } from "./DashboardCard";
 
 interface VigorMeterProps {
   accuracy: number;
@@ -35,34 +36,12 @@ export function VigorMeter({ accuracy, mmdDrift, biasScore, mmdSeries }: VigorMe
     .join(" ");
 
   return (
-    <Box
-      h="100%"
-      bg="aegis.black"
-      border="1px solid"
-      borderColor={isCritical ? "aegis.red" : "aegis.border"}
-      p={0}
-      display="flex"
-      flexDir="column"
-      overflow="hidden"
-      position="relative"
+    <DashboardCard
+      eyebrow="Tile-A"
+      title="Vigor Meter"
+      isAlert={isCritical}
       sx={isCritical ? { animation: "crtGlitch 0.15s infinite" } : {}}
     >
-      {/* Tile header */}
-      <Flex
-        px={3}
-        py={1.5}
-        borderBottom="1px solid"
-        borderColor="aegis.border"
-        justify="space-between"
-        align="center"
-        flexShrink={0}
-      >
-        <Text fontSize="0.55rem" color="aegis.textDim" letterSpacing="0.15em">
-          TILE-A // VIGOR METER
-        </Text>
-      </Flex>
-
-      {/* Body */}
       <Flex flex={1} direction="column" align="center" justify="center" gap={2} p={3}>
         {/* Status badge */}
         <HStack spacing={2}>
@@ -138,6 +117,6 @@ export function VigorMeter({ accuracy, mmdDrift, biasScore, mmdSeries }: VigorMe
           </Box>
         </HStack>
       </Flex>
-    </Box>
+    </DashboardCard>
   );
 }

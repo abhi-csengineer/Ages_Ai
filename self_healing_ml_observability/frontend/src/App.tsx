@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Box, SimpleGrid } from "@chakra-ui/react";
+import { Badge, Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { HeaderBar } from "./components/HeaderBar";
 import { StatusBar } from "./components/StatusBar";
@@ -9,6 +9,7 @@ import { InferenceSidecar } from "./components/InferenceSidecar";
 import { ModelComparisonMatrix } from "./components/ModelComparisonMatrix";
 import { ParameterRootCause } from "./components/ParameterRootCause";
 import { useAegisStream, StreamOrb } from "./hooks/useAegisStream";
+import { usePersistentColorMode } from "./hooks/usePersistentColorMode";
 import {
   fetchActiveLearningCandidates,
   fetchEmbeddingPoints,
@@ -21,61 +22,57 @@ import {
   generateMockParameterDrifts,
 } from "./hooks/mockData";
 
-/* ── Stagger animation for bento tiles ── */
 const tileVariants = {
-  hidden: { opacity: 0, scale: 0.97 },
-  visible: (i: number) => ({
+  hidden: { opacity: 0, y: 18, scale: 0.98 },
+  visible: (index: number) => ({
     opacity: 1,
+    y: 0,
     scale: 1,
     transition: {
-      delay: 0.08 + i * 0.07,
-      duration: 0.35,
+      delay: 0.08 + index * 0.06,
+      duration: 0.38,
       ease: "easeOut",
     },
   }),
 };
 
 const MotionBox = motion(Box);
-
-/* ── Pre-generate stable mock data outside component ── */
 const MOCK_POINTS = generateMockEmbeddingPoints();
 const MOCK_MMDS = generateMockMmdSeries();
 
 export default function App() {
-  /* 1. Custom hook */
+  const { colorMode, isDarkMode, toggleColorMode } = usePersistentColorMode();
   const { telemetry, mmdSeries, streamOrbs, securityLog, connected, tripped } =
     useAegisStream();
 
-  /* 2. All useState in stable order */
   const [realPoints, setRealPoints] = useState<EmbeddingPoint[]>([]);
   const [queueCount, setQueueCount] = useState(14);
   const [pulseTick, setPulseTick] = useState(0);
   const [mockOrbs, setMockOrbs] = useState<StreamOrb[]>([]);
 
-  /* 4. useEffect — fetch real embedding points */
   useEffect(() => {
     const tick = async () => {
       try {
-        const [cands, embeds] = await Promise.all([
+        const [candidates, embeddings] = await Promise.all([
           fetchActiveLearningCandidates(25),
           fetchEmbeddingPoints(320),
         ]);
-        setQueueCount(cands.items.length);
-        setRealPoints(embeds.points);
+        setQueueCount(candidates.items.length);
+        setRealPoints(embeddings.points);
       } catch {
-        /* backend offline */
+        // The dashboard keeps realistic mock data visible when the API is offline.
       }
     };
+
     tick();
-    const timer = setInterval(tick, 5000);
-    return () => clearInterval(timer);
+    const timer = window.setInterval(tick, 5000);
+    return () => window.clearInterval(timer);
   }, []);
 
-  /* 5. useEffect — spawn mock stream orbs (always) */
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPulseTick((t) => t + 1);
-      setMockOrbs((prev) => {
+    const interval = window.setInterval(() => {
+      setPulseTick((currentTick) => currentTick + 1);
+      setMockOrbs((previousOrbs) => {
         const statuses: Array<"OK" | "DRIFT" | "ATTACK"> = [
           "OK",
           "OK",
@@ -101,22 +98,26 @@ export default function App() {
                 : 0.45 + (Math.random() - 0.5) * 0.25,
           status,
         };
-        return [...prev, orb].slice(-60);
+        return [...previousOrbs, orb].slice(-60);
       });
     }, 800);
-    return () => clearInterval(interval);
+
+    return () => window.clearInterval(interval);
   }, []);
 
-  /* 6. useEffect — pulse on real batch events */
   useEffect(() => {
-    if (!telemetry.batch_event) return;
-    setPulseTick((t) => t + 1);
+    if (!telemetry.batch_event) {
+      return;
+    }
+
+    setPulseTick((currentTick) => currentTick + 1);
     fetchEmbeddingPoints(320)
-      .then((resp) => setRealPoints(resp.points))
-      .catch(() => {});
+      .then((response) => setRealPoints(response.points))
+      .catch(() => {
+        // Ignore transient refresh errors so the live dashboard never blanks out.
+      });
   }, [telemetry.batch_event]);
 
-  /* ── Derived data ── */
   const embeddingPoints =
     realPoints.length > 50 ? realPoints : [...MOCK_POINTS, ...realPoints];
   const accuracy = telemetry.hui_walter_estimated_accuracy;
@@ -126,13 +127,11 @@ export default function App() {
   const orbs = [...streamOrbs, ...mockOrbs].slice(-80);
   const isCritical = accuracy < 0.9 || tripped;
 
-  /* Model comparison — recalculate when accuracy/drift change */
   const modelComparison = useMemo(
     () => generateMockModelComparison(accuracy, drift),
     [accuracy, drift],
   );
 
-  /* Parameter drift — recalculate when drift changes */
   const parameterDrifts = useMemo(
     () => generateMockParameterDrifts(drift),
     [drift],
@@ -140,104 +139,145 @@ export default function App() {
 
   return (
     <Box
-      h="100vh"
-      w="100vw"
-      display="flex"
-      flexDir="column"
-      bg="aegis.black"
-      overflow="hidden"
+      bg="aegis.page"
+      color="aegis.text"
+      minH="100vh"
+      transition="background-color 220ms ease, color 220ms ease"
     >
+      <a className="skip-link" href="#dashboard-content">
+        Skip to dashboard
+      </a>
+
       <HeaderBar
         connected={connected}
         circuitStatus={telemetry.circuit_status}
         tripped={isCritical}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleColorMode}
       />
 
-      {/* Bento Grid: 12 columns, 2 rows */}
-      <SimpleGrid
-        columns={12}
-        spacing={0}
-        flex={1}
-        minH={0}
-        templateRows="1fr 1fr"
-        bg="aegis.border"
-        gap="1px"
-        p="1px"
+      <Box
+        aria-hidden="true"
+        bgGradient={
+          isDarkMode
+            ? "radial(circle at top left, rgba(157,255,58,0.14), transparent 34%), radial(circle at top right, rgba(56,189,248,0.10), transparent 30%)"
+            : "radial(circle at top left, rgba(37,99,235,0.14), transparent 34%), radial(circle at top right, rgba(20,184,166,0.12), transparent 30%)"
+        }
+        h="360px"
+        left={0}
+        pointerEvents="none"
+        position="fixed"
+        top={0}
+        w="100%"
+        zIndex={0}
+      />
+
+      <Box
+        as="main"
+        id="dashboard-content"
+        maxW="1440px"
+        mx="auto"
+        px={{ base: 4, md: 6, xl: 8 }}
+        py={{ base: 6, md: 8 }}
+        position="relative"
+        zIndex={1}
       >
-        {/* Row 1: Vigor(4) | UMAP(5) | Terminal(3) */}
-        <MotionBox
-          gridColumn="span 4"
-          gridRow="span 1"
-          minH={0}
-          custom={0}
-          variants={tileVariants}
-          initial="hidden"
-          animate="visible"
+        <Flex
+          align={{ base: "flex-start", lg: "flex-end" }}
+          direction={{ base: "column", lg: "row" }}
+          gap={4}
+          justify="space-between"
+          mb={{ base: 5, md: 7 }}
         >
-          <VigorMeter
-            accuracy={accuracy}
-            mmdDrift={drift}
-            biasScore={bias}
-            mmdSeries={mmds}
-          />
-        </MotionBox>
+          <Box maxW="760px">
+            <Badge bg="aegis.accentSoft" color="aegis.accent" mb={3}>
+              Production command center
+            </Badge>
+            <Text
+              as="h2"
+              color="aegis.text"
+              fontSize={{ base: "2xl", md: "4xl" }}
+              fontWeight={900}
+              letterSpacing="-0.04em"
+              lineHeight={1.05}
+            >
+              Monitor drift, security, and model health in one polished workspace.
+            </Text>
+            <Text color="aegis.textMuted" fontSize={{ base: "sm", md: "md" }} mt={3}>
+              Theme preference is saved as <strong>{colorMode}</strong> mode, and the
+              interface adapts smoothly from desktop walls to tablet and mobile reviews.
+            </Text>
+          </Box>
+          <StatusBar queueCount={queueCount} driftScore={drift} />
+        </Flex>
 
-        <MotionBox
-          gridColumn="span 5"
-          gridRow="span 1"
-          minH={0}
-          custom={1}
-          variants={tileVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <VoidUmap
-            points={embeddingPoints}
-            mmdDrift={drift}
-            streamOrbs={orbs}
-            pulseTick={pulseTick}
-          />
-        </MotionBox>
+        <SimpleGrid columns={{ base: 1, lg: 12 }} gap={{ base: 4, md: 5 }}>
+          <MotionBox
+            gridColumn={{ base: "span 1", lg: "span 4" }}
+            minH={{ base: "520px", lg: "680px" }}
+            custom={0}
+            variants={tileVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <VigorMeter
+              accuracy={accuracy}
+              mmdDrift={drift}
+              biasScore={bias}
+              mmdSeries={mmds}
+            />
+          </MotionBox>
 
-        <MotionBox
-          gridColumn="span 3"
-          gridRow="span 1"
-          minH={0}
-          custom={2}
-          variants={tileVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <InferenceSidecar securityLog={securityLog} />
-        </MotionBox>
+          <MotionBox
+            gridColumn={{ base: "span 1", lg: "span 5" }}
+            minH={{ base: "420px", md: "540px", lg: "680px" }}
+            custom={1}
+            variants={tileVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <VoidUmap
+              points={embeddingPoints}
+              mmdDrift={drift}
+              streamOrbs={orbs}
+              pulseTick={pulseTick}
+            />
+          </MotionBox>
 
-        {/* Row 2: Model Matrix(6) | Parameter Hub(6) */}
-        <MotionBox
-          gridColumn="span 6"
-          gridRow="span 1"
-          minH={0}
-          custom={3}
-          variants={tileVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <ModelComparisonMatrix models={modelComparison} />
-        </MotionBox>
+          <MotionBox
+            gridColumn={{ base: "span 1", lg: "span 3" }}
+            minH={{ base: "460px", lg: "680px" }}
+            custom={2}
+            variants={tileVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <InferenceSidecar securityLog={securityLog} />
+          </MotionBox>
 
-        <MotionBox
-          gridColumn="span 6"
-          gridRow="span 1"
-          minH={0}
-          custom={4}
-          variants={tileVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <ParameterRootCause parameters={parameterDrifts} />
-        </MotionBox>
-      </SimpleGrid>
+          <MotionBox
+            gridColumn={{ base: "span 1", lg: "span 6" }}
+            minH={{ base: "420px", lg: "500px" }}
+            custom={3}
+            variants={tileVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <ModelComparisonMatrix models={modelComparison} />
+          </MotionBox>
 
-      <StatusBar queueCount={queueCount} driftScore={drift} />
+          <MotionBox
+            gridColumn={{ base: "span 1", lg: "span 6" }}
+            minH={{ base: "420px", lg: "500px" }}
+            custom={4}
+            variants={tileVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <ParameterRootCause parameters={parameterDrifts} />
+          </MotionBox>
+        </SimpleGrid>
+      </Box>
     </Box>
   );
 }

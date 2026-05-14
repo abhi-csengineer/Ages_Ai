@@ -9,82 +9,134 @@ const theme = extendTheme({
   config,
 
   fonts: {
-    heading: `'JetBrains Mono', monospace`,
-    body: `'JetBrains Mono', monospace`,
-    mono: `'JetBrains Mono', monospace`,
+    heading: `'Inter', 'JetBrains Mono', system-ui, sans-serif`,
+    body: `'Inter', 'JetBrains Mono', system-ui, sans-serif`,
+    mono: `'JetBrains Mono', 'SFMono-Regular', Consolas, monospace`,
   },
 
   colors: {
     aegis: {
-      black: "#050505",
-      bg: "#0A0A0A",
-      border: "#2D3748",
-      lime: "#CCFF00",
-      limeDim: "rgba(204,255,0,0.15)",
-      orange: "#FF4D00",
-      orangeDim: "rgba(255,77,0,0.15)",
-      red: "#FF0033",
-      text: "#E0E0E0",
-      textDim: "rgba(224,224,224,0.4)",
-      green: "#00FF41",
+      lime: "#9DFF3A",
+      limeDim: "rgba(157,255,58,0.16)",
+      orange: "#FF7A1A",
+      orangeDim: "rgba(255,122,26,0.15)",
+      red: "#FF3158",
+      yellow: "#FFD166",
+      green: "#14F195",
+      cyan: "#38BDF8",
+      violet: "#8B5CF6",
+    },
+  },
+
+  semanticTokens: {
+    colors: {
+      "aegis.page": { default: "#F4F7FB", _dark: "#05070D" },
+      "aegis.black": { default: "#FFFFFF", _dark: "#0B1020" },
+      "aegis.bg": { default: "#F4F7FB", _dark: "#05070D" },
+      "aegis.surface": { default: "#FFFFFF", _dark: "#0B1020" },
+      "aegis.surfaceElevated": { default: "#F9FBFF", _dark: "#111827" },
+      "aegis.border": { default: "#D8E0EA", _dark: "#243044" },
+      "aegis.borderStrong": { default: "#AEBBD0", _dark: "#334155" },
+      "aegis.text": { default: "#142033", _dark: "#E6EDF7" },
+      "aegis.textMuted": { default: "#5E6B80", _dark: "#93A4B8" },
+      "aegis.textFaint": { default: "#8492A6", _dark: "#64748B" },
+      "aegis.textDim": { default: "#5E6B80", _dark: "#93A4B8" },
+      "aegis.accent": { default: "#2563EB", _dark: "#9DFF3A" },
+      "aegis.accentSoft": { default: "rgba(37,99,235,0.10)", _dark: "rgba(157,255,58,0.14)" },
+      "aegis.warning": { default: "#D97706", _dark: "#FF7A1A" },
+      "aegis.danger": { default: "#DC2626", _dark: "#FF3158" },
+      "aegis.success": { default: "#059669", _dark: "#14F195" },
+      "aegis.gridLine": { default: "rgba(37,99,235,0.09)", _dark: "rgba(157,255,58,0.055)" },
+      "aegis.overlay": { default: "rgba(255,255,255,0.78)", _dark: "rgba(5,7,13,0.78)" },
+    },
+    shadows: {
+      "aegis.card": { default: "0 18px 45px rgba(15,23,42,0.08)", _dark: "0 18px 50px rgba(0,0,0,0.38)" },
+      "aegis.glow": { default: "0 0 0 rgba(37,99,235,0)", _dark: "0 0 28px rgba(157,255,58,0.12)" },
     },
   },
 
   radii: {
-    none: "0",
-    sm: "0",
-    base: "0",
-    md: "0",
-    lg: "0",
-    xl: "0",
-    "2xl": "0",
-    "3xl": "0",
-    full: "0",
+    sm: "0.5rem",
+    base: "0.75rem",
+    md: "1rem",
+    lg: "1.25rem",
+    xl: "1.5rem",
+    "2xl": "1.75rem",
+    full: "999px",
   },
 
   styles: {
     global: {
-      "html, body": {
-        bg: "#050505",
-        color: "#E0E0E0",
-        fontFamily: `'JetBrains Mono', monospace`,
-        fontSize: "13px",
-        lineHeight: 1.5,
-        overflowX: "hidden",
+      "html, body, #root": {
+        minHeight: "100%",
       },
-      "*": {
-        borderRadius: "0 !important",
+      "html, body": {
+        bg: "aegis.page",
+        color: "aegis.text",
+        fontSize: "14px",
+        lineHeight: 1.6,
+        overflowX: "hidden",
+        scrollBehavior: "smooth",
+        transition: "background-color 220ms ease, color 220ms ease",
+      },
+      "*, *::before, *::after": {
+        boxSizing: "border-box",
+      },
+      "*:focus-visible": {
+        outline: "3px solid",
+        outlineColor: "aegis.accent",
+        outlineOffset: "3px",
+      },
+      "::selection": {
+        bg: "aegis.accentSoft",
+        color: "aegis.text",
+      },
+      ".skip-link": {
+        position: "absolute",
+        left: "1rem",
+        top: "-4rem",
+        zIndex: 20,
+        bg: "aegis.surface",
+        color: "aegis.text",
+        border: "1px solid",
+        borderColor: "aegis.borderStrong",
+        borderRadius: "full",
+        px: 4,
+        py: 2,
+        transition: "top 160ms ease",
+      },
+      ".skip-link:focus": {
+        top: "1rem",
       },
       "::-webkit-scrollbar": {
-        width: "4px",
-        height: "4px",
+        width: "8px",
+        height: "8px",
       },
       "::-webkit-scrollbar-track": {
-        bg: "#050505",
+        bg: "aegis.page",
       },
       "::-webkit-scrollbar-thumb": {
-        bg: "#2D3748",
+        bg: "aegis.borderStrong",
+        borderRadius: "full",
       },
-      /* CRT glitch keyframes */
+      "@media (prefers-reduced-motion: reduce)": {
+        "*, *::before, *::after": {
+          animationDuration: "0.01ms !important",
+          animationIterationCount: "1 !important",
+          scrollBehavior: "auto !important",
+          transitionDuration: "0.01ms !important",
+        },
+      },
       "@keyframes crtGlitch": {
         "0%, 100%": { transform: "translate(0)" },
-        "20%": { transform: "translate(-2px, 1px)" },
-        "40%": { transform: "translate(2px, -1px)" },
-        "60%": { transform: "translate(-1px, 2px)" },
-        "80%": { transform: "translate(1px, -2px)" },
+        "20%": { transform: "translate(-1px, 1px)" },
+        "40%": { transform: "translate(1px, -1px)" },
+        "60%": { transform: "translate(-1px, 1px)" },
+        "80%": { transform: "translate(1px, -1px)" },
       },
-      "@keyframes scanline": {
-        "0%": { top: "-2px" },
-        "100%": { top: "100%" },
-      },
-      "@keyframes blink": {
-        "0%, 100%": { opacity: 1 },
-        "50%": { opacity: 0 },
-      },
-      "@keyframes scanSweep": {
-        "0%": { transform: "translateX(-100%)", opacity: 0.8 },
-        "50%": { opacity: 1 },
-        "100%": { transform: "translateX(100%)", opacity: 0 },
+      "@keyframes softPulse": {
+        "0%, 100%": { opacity: 0.65, transform: "scale(1)" },
+        "50%": { opacity: 1, transform: "scale(1.08)" },
       },
     },
   },
@@ -92,70 +144,77 @@ const theme = extendTheme({
   components: {
     Button: {
       baseStyle: {
-        borderRadius: "0",
-        fontFamily: `'JetBrains Mono', monospace`,
-        fontWeight: 600,
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        fontSize: "xs",
+        borderRadius: "full",
+        fontWeight: 700,
+        letterSpacing: "0.04em",
+        transition: "all 180ms ease",
+      },
+    },
+    IconButton: {
+      baseStyle: {
+        borderRadius: "full",
+        transition: "all 180ms ease",
       },
     },
     Badge: {
       baseStyle: {
-        borderRadius: "0",
-        fontFamily: `'JetBrains Mono', monospace`,
+        borderRadius: "full",
         textTransform: "uppercase",
-        letterSpacing: "0.15em",
-        fontSize: "0.55rem",
+        letterSpacing: "0.08em",
+        fontSize: "0.62rem",
+        px: 2,
+        py: 0.5,
       },
     },
     Table: {
       baseStyle: {
         th: {
-          fontFamily: `'JetBrains Mono', monospace`,
           textTransform: "uppercase",
-          letterSpacing: "0.12em",
-          fontSize: "0.6rem",
-          borderColor: "#2D3748",
+          letterSpacing: "0.08em",
+          fontSize: "0.65rem",
+          borderColor: "aegis.border",
+          color: "aegis.textMuted",
         },
         td: {
-          fontFamily: `'JetBrains Mono', monospace`,
-          fontSize: "0.7rem",
-          borderColor: "#2D3748",
+          fontSize: "0.75rem",
+          borderColor: "aegis.border",
+          color: "aegis.text",
         },
       },
     },
     Progress: {
       baseStyle: {
         track: {
-          borderRadius: "0",
-          bg: "rgba(204,255,0,0.08)",
+          borderRadius: "full",
+          bg: "aegis.accentSoft",
         },
         filledTrack: {
-          borderRadius: "0",
+          borderRadius: "full",
+          transition: "width 0.6s ease-out",
         },
       },
     },
     Input: {
       baseStyle: {
         field: {
-          borderRadius: "0",
-          fontFamily: `'JetBrains Mono', monospace`,
+          borderRadius: "full",
+          bg: "aegis.surfaceElevated",
+          borderColor: "aegis.border",
+          color: "aegis.text",
+          _placeholder: { color: "aegis.textFaint" },
         },
       },
     },
     Stat: {
       baseStyle: {
         label: {
-          fontFamily: `'JetBrains Mono', monospace`,
           textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          fontSize: "0.55rem",
-          color: "aegis.textDim",
+          letterSpacing: "0.08em",
+          fontSize: "0.65rem",
+          color: "aegis.textMuted",
         },
         number: {
-          fontFamily: `'JetBrains Mono', monospace`,
-          fontWeight: 700,
+          fontWeight: 800,
         },
       },
     },
